@@ -1,26 +1,40 @@
-# Assignment 01 — AI Utility Service
+# Assignment 01 — Build Your First AI Utility API
 
 ## Objective
 
-Build a small production-minded AI backend using Node.js and Express.
+Build one small production-minded AI backend using Node.js and Express.
 
-The goal is not to build a fancy UI. The goal is to practice the engineering boundary between application code and an LLM.
+The goal is **not** to build a large feature set.
 
-## Required Endpoints
+The goal is to demonstrate that you understand the boundary between:
 
 ```text
-POST /summarize
-POST /rewrite
-POST /classify
+Application Code
+      ↓
+LLM Service
+      ↓
+Provider API
+      ↓
+Model
 ```
 
-### `/summarize`
+---
+
+# Part A — Mandatory
+
+## Endpoint
+
+Create:
+
+```text
+POST /api/generate
+```
 
 Input:
 
 ```json
 {
-  "text": "JavaScript is a programming language..."
+  "topic": "JavaScript closures"
 }
 ```
 
@@ -28,92 +42,174 @@ Output:
 
 ```json
 {
-  "result": "..."
+  "text": "..."
 }
 ```
 
-### `/rewrite`
+The exact generated text is not graded for wording. The implementation and engineering structure are the focus.
 
-Input:
+---
 
-```json
-{
-  "text": "Please check this once.",
-  "tone": "professional"
-}
+## Mandatory requirements
+
+### 1. Node.js + Express
+
+Use the web-development stack used in class.
+
+### 2. Environment variables
+
+Keep provider credentials outside source code.
+
+Include:
+
+```text
+.env.example
 ```
 
-The API should return a rewritten version matching the requested tone.
+but never commit a real `.env` file.
 
-### `/classify`
+### 3. Service layer
 
-Input:
+Provider calls must live outside the route handler.
 
-```json
-{
-  "text": "I cannot log in to my account"
-}
-```
-
-Return a structured response with at least:
-
-```json
-{
-  "category": "authentication",
-  "confidence": 0.0,
-  "reason": "..."
-}
-```
-
-## Engineering Requirements
-
-- Use an LLM service abstraction.
-- Validate all request bodies.
-- Keep API credentials on the server.
-- Add consistent error handling.
-- Handle provider/API failures gracefully.
-- Add a README explaining the architecture.
-- Do not commit `.env`.
-
-## Recommended Structure
+Recommended:
 
 ```text
 src/
 ├── app.js
 ├── routes/
-├── services/
-├── prompts/
-└── utils/
+│   └── generate.routes.js
+└── services/
+    └── llm.service.js
 ```
 
-## Stretch Goals
+### 4. Validation
 
-1. Add streaming to `/summarize`.
-2. Add request IDs.
-3. Add rate limiting.
-4. Record model latency.
-5. Record token usage when supported by the provider.
-6. Support two model providers behind one interface.
-7. Add automated tests for validation and failure behavior.
+Reject requests where:
 
-## Evaluation Rubric
+- `topic` is missing
+- `topic` is not a string
+- `topic` is empty/whitespace-only
+
+Return a suitable `4xx` response.
+
+### 5. Error handling
+
+Handle provider/API failures gracefully.
+
+Do not return raw provider errors or secrets to the client.
+
+### 6. README
+
+Your README must explain:
+
+- request flow
+- architecture
+- where the API key lives
+- what happens when the provider fails
+
+Include one small architecture diagram.
+
+---
+
+# Part B — Engineering Reflection
+
+Answer these questions in your README:
+
+1. Why should the model provider call not be written directly inside every route?
+2. Why should the API key not be placed in React/browser code?
+3. Why validate input before making the model request?
+4. What happens to your application if the model provider is unavailable?
+5. Why can an HTTP 200 response still represent a bad AI product outcome?
+
+Keep each answer to 2–5 sentences.
+
+---
+
+# Part C — Stretch Goals
+
+Choose any 2.
+
+### Stretch 1 — Streaming
+
+Stream generated output to a client.
+
+### Stretch 2 — Latency
+
+Measure the time taken by the model request.
+
+Example:
+
+```text
+LLM latency: 1240 ms
+```
+
+### Stretch 3 — Request ID
+
+Generate a unique request ID and include it in logs.
+
+### Stretch 4 — Rate Limiting
+
+Prevent a user from making unlimited model requests.
+
+### Stretch 5 — Provider Abstraction
+
+Create a second provider implementation behind the same service interface.
+
+### Stretch 6 — Automated Tests
+
+Test:
+
+- validation failures
+- provider failure handling
+- successful response shape
+
+---
+
+# Submission Checklist
+
+```text
+[ ] POST /api/generate works
+[ ] Input validation works
+[ ] Provider call is inside a service
+[ ] API key is not committed
+[ ] .env.example exists
+[ ] Provider errors are handled
+[ ] README explains architecture
+[ ] Architecture diagram included
+[ ] Reflection questions answered
+```
+
+---
+
+# Rubric
 
 | Area | Weight |
 |---|---:|
-| Correct functionality | 25% |
-| AI integration quality | 20% |
-| API architecture | 20% |
-| Validation + error handling | 15% |
-| Security practices | 10% |
+| Working AI endpoint | 25% |
+| Service-layer architecture | 20% |
+| Validation + error handling | 20% |
+| Security / environment handling | 15% |
 | README + architecture explanation | 10% |
+| Engineering reflection | 10% |
 
-## Submission
+---
+
+# Submission Format
 
 Repository should contain:
 
-- source code
-- `.env.example`
-- README
-- sample API requests
-- architecture diagram
-- short note describing one production risk and how you would mitigate it
+```text
+src/
+.env.example
+README.md
+package.json
+```
+
+Do not submit secrets.
+
+## Important
+
+The assignment is intentionally small.
+
+**Do not build authentication, a frontend, a database, RAG, agents, or a multi-provider platform for this assignment.** Those topics belong later in the course.
