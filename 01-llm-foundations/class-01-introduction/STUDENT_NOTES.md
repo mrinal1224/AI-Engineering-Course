@@ -1,108 +1,221 @@
 # Class 01 Student Notes — Introduction to AI Engineering
 
-## 1. The Big Idea
+## 1. The Core Idea
 
-An AI application is not the same thing as an LLM.
+An **LLM is a model**.
 
-An **LLM is a model**. An **AI product is a software system built around a model**.
+An **AI application is a software system built around one or more models**.
 
-AI Engineering is the engineering work required to make that model useful, reliable and deployable inside a real application.
+**AI Engineering** is the engineering discipline of turning model capabilities into useful, reliable software systems.
 
-## 2. Vocabulary
-
-| Term | Meaning |
-|---|---|
-| AI | Broad field of building systems that perform tasks associated with intelligence |
-| Machine Learning | Learning patterns from data instead of programming every rule explicitly |
-| Deep Learning | ML based on multi-layer neural networks |
-| Generative AI | Models that generate new content |
-| LLM | Large-scale language model used to predict/generate tokens |
-| AI Engineering | Building production software around AI models |
-
-## 3. AI Application Stack
+A useful mental model:
 
 ```text
-Product / UI
-    ↓
+Model capability
+      +
+Application engineering
+      =
+AI product
+```
+
+---
+
+## 2. AI Landscape
+
+```text
+Artificial Intelligence
+        │
+        ├── Predictive / Decision Systems
+        │
+        └── Generative AI
+                ├── Text
+                ├── Images
+                ├── Audio
+                └── Video
+```
+
+LLMs are language-focused generative models.
+
+Do not use **AI**, **LLM**, **model**, and **AI application** as interchangeable terms.
+
+---
+
+## 3. Model vs Provider vs API vs SDK
+
+```text
+MODEL
+  ↓
+PROVIDER API
+  ↓
+SDK
+  ↓
+YOUR SERVER
+  ↓
+YOUR APPLICATION
+```
+
+- **Model:** the trained model that performs inference.
+- **Provider:** a company/service hosting or exposing models.
+- **API:** the interface your software uses to communicate with the provider.
+- **SDK:** a developer library that makes API usage easier from a programming language.
+- **Application:** your own software, business logic, UI, data, tools, and reliability layer.
+
+---
+
+## 4. AI Application Stack
+
+```text
+User / UI
+   ↓
 Application Logic
-    ↓
+   ↓
 AI Orchestration
-    ↓
+   ↓
 Context / Memory / Retrieval
-    ↓
+   ↓
 Tools / External Systems
-    ↓
+   ↓
+Model Provider
+   ↓
 Model
-    ↓
+   ↓
 Infrastructure
 ```
 
-Remember: **the model is one component of the system.**
-
-## 4. LLM Request Lifecycle
+Examples from web development:
 
 ```text
-Client
-  ↓
-Backend
-  ↓
-Validation
-  ↓
-Prompt / Context construction
-  ↓
-Model Provider
-  ↓
-Inference
-  ↓
-Generated tokens
-  ↓
-Backend
-  ↓
-Client
+React            → UI
+Express          → application/API layer
+RAG              → context / retrieval layer
+Tool calling     → external system integration
+Model provider   → model access
+Logs / queues    → infrastructure
 ```
 
-## 5. Tokens
+**Remember: the model is one component, not the entire product.**
 
-A token is a unit processed by the model tokenizer. A token can be a whole word, part of a word, punctuation or another text fragment.
+---
 
-Why tokens matter:
+## 5. How an LLM Generates Text
 
-- usage and cost
-- context limits
-- prompt size
-- output limits
+A useful conceptual model:
 
-## 6. Context Window
+```text
+Text
+ ↓
+Tokens
+ ↓
+Token representations
+ ↓
+Transformer layers
+ ↓
+Next-token probabilities
+ ↓
+Select / sample token
+ ↓
+Append token
+ ↓
+Repeat
+```
 
-The context window is the amount of information available to the model for a single inference process.
+You do not need the Transformer mathematics yet.
 
-It can contain:
+### Example
 
-- system instructions
-- previous conversation
-- retrieved documents
-- tool results
-- user message
+```text
+The cat is sitting on the ___
 
-The model does not automatically see your database, files or application state.
+mat       0.42
+floor     0.26
+chair     0.11
+table     0.07
+...
+```
 
-## 7. Inference
+The model generates a sequence token by token based on learned patterns and the current context.
 
-**Inference** = using a trained model to generate an output from an input/context.
+---
 
-Training changes model parameters. Inference uses those learned parameters.
+## 6. Tokens
 
-## 8. Temperature
+A **token** is a unit processed by a model tokenizer.
 
-Temperature changes how strongly generation favors high-probability choices versus more varied choices.
+A token can be:
 
-It should not be treated as a simple "accuracy" slider.
+- a complete word
+- part of a word
+- punctuation
+- another tokenizer-defined text fragment
 
-## 9. Why Production AI Needs Engineering
+```text
+Token ≠ Word
+```
 
-A model call can succeed technically and still produce a bad application result.
+Tokens matter because they affect:
 
-Typical engineering concerns:
+- input/output limits
+- context usage
+- usage-based cost
+- latency
+
+Do not memorize exact token counts. Build intuition first.
+
+---
+
+## 7. Context Window
+
+The context window contains the information available to the model for the current inference request.
+
+```text
+System instructions
+Conversation history
+Retrieved documents
+Tool results
+User request
+        ↓
+   CONTEXT WINDOW
+```
+
+Important:
+
+> The model does not automatically know your database, React state, private files, or internal APIs.
+
+The application must provide relevant information through context, retrieval, or tools.
+
+This later becomes the foundation for:
+
+```text
+Context
+├── RAG / Retrieval
+├── Memory
+└── Tool results
+```
+
+---
+
+## 8. Inference
+
+**Inference** = using a trained model to generate output for a given input/context.
+
+Training changes learned model parameters.
+
+Inference uses those learned parameters to generate an output.
+
+---
+
+## 9. Why LLM Output Is Probabilistic
+
+LLM generation is not equivalent to looking up one fixed answer in a database.
+
+Outputs can be:
+
+- useful
+- incomplete
+- inconsistent
+- confidently wrong
+
+This creates an engineering responsibility outside the model.
 
 ```text
 Model
@@ -116,9 +229,64 @@ Model
  = production AI system
 ```
 
-## 10. Minimal Node.js AI Backend
+---
 
-Example architecture:
+## 10. HTTP 200 ≠ Correct Answer
+
+An API request can succeed technically while the application outcome is poor.
+
+```text
+HTTP 200
+   ≠
+Correct / useful answer
+```
+
+Later in the course, this becomes the motivation for **evaluation**.
+
+---
+
+## 11. Temperature
+
+Temperature influences generation behaviour by changing how strongly sampling favours high-probability versus lower-probability alternatives.
+
+Do not think of temperature as:
+
+```text
+higher = smarter
+lower  = smarter
+```
+
+It is a generation control, not a universal quality slider.
+
+---
+
+## 12. LLM Request Lifecycle
+
+```text
+Client
+  ↓
+Backend
+  ↓
+Validation
+  ↓
+Prompt + Context construction
+  ↓
+Provider API
+  ↓
+Model inference
+  ↓
+Generated tokens
+  ↓
+Response / Stream
+  ↓
+Client
+```
+
+---
+
+## 13. Minimal Node.js AI Backend
+
+Target architecture:
 
 ```text
 Express Route
@@ -130,11 +298,19 @@ Provider SDK
 Model
 ```
 
-Keep provider-specific code in a service module so the rest of the application is not coupled to a single API.
+Why use a service layer?
 
-## 11. Security Rule
+- isolate provider-specific code
+- keep routes readable
+- make testing easier
+- reduce vendor coupling
+- make provider replacement easier later
 
-Never expose a provider API key in browser-side JavaScript.
+---
+
+## 14. Security Rule
+
+Never put a provider API key in browser JavaScript.
 
 Good:
 
@@ -146,13 +322,46 @@ Bad:
 
 ```text
 React → Model Provider
-       with secret API key in browser
+        + secret API key in browser
 ```
 
-## 12. Questions to Think About
+---
 
-1. Why is an AI model only one layer of an AI application?
-2. What information must be placed into context for the model to use it?
-3. Why can a successful HTTP response still be a failed AI request?
-4. How would you design an AI API for a large number of users?
-5. What would you measure in production?
+## 15. What Comes Later in the Course?
+
+```text
+Foundations
+    ↓
+Token representations
+    ↓
+Embeddings / Similarity
+    ↓
+RAG
+    ↓
+Memory / Context engineering
+    ↓
+Tool calling
+    ↓
+Agents
+    ↓
+MCP
+    ↓
+Evaluation
+    ↓
+Production AI systems
+```
+
+Class 01 is about the mental model that connects all of these topics.
+
+---
+
+## 16. Quick Revision Questions
+
+1. What is the difference between a model and an AI application?
+2. What is the difference between a model, API, and SDK?
+3. What is a token?
+4. Why does the context window matter?
+5. What is inference?
+6. Why is LLM output probabilistic?
+7. Why does HTTP 200 not guarantee a good answer?
+8. Why should provider calls live behind a backend/service layer?
